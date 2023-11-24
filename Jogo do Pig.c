@@ -23,7 +23,7 @@ int Resultado_Def_PC;
 void Lancar_Dado(Dado *, Resultado *, Definitivo *, int *, int);
 void Lancar_Dado_PC(Dado *, Resultado *, Definitivo *);
 void Segurar_Dado(Dado * ,Resultado *, Definitivo *);
-void Lancar_Dois_Dados(Dado *, Resultado *, Definitivo *, int *);
+void Lancar_Dois_Dados(Dado *, Resultado *, Definitivo *);
 
 int main()
 {
@@ -61,7 +61,7 @@ int main()
         switch (opcao)
         {
         case 1:
-            Lancar_Dado(&dado, &resultado, &resultado_definitivo,&vitoria,&Dev);
+            Lancar_Dois_Dados(&dado, &resultado, &resultado_definitivo);
             break;
         case 2:
             Segurar_Dado(&dado, &resultado, &resultado_definitivo);
@@ -224,7 +224,6 @@ if (dado->Dado_Player == 1 || dado->Dado_Player_2 == 1)
             resultado->Resultado_PC = 0;
             dado->Dado_Player = 0;
             dado->Dado_PC = 0;
-           (*victory)++;
         }else{
         resultado_definitivo->Resultado_Def_Player = resultado_definitivo->Resultado_Def_Player - resultado->Resultado_Player;
         }
