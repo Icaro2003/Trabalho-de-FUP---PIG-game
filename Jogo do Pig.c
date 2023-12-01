@@ -1,101 +1,122 @@
+// lib.h
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
 #include <string.h>
-typedef struct
-{
-    int Dado_Player;
-    int Dado_Player_2;
-    int Dado_PC;
-    int Dado_PC_2;
-} Dado;
+
+#define MAX_PLAYERS 100
 
 typedef struct
 {
     char nome[50];
+    int Dado_Player;
+    int Dado_Player_2;
     int Resultado_Player;
-    int Resultado_PC;
-}Resultado;
+    int Resultado_Def_Player;
+} Player;
 
 typedef struct
 {
-    int Resultado_Def_Player;
+    int Dado_PC;
+    int Dado_PC_2;
+    int Resultado_PC;
     int Resultado_Def_PC;
-} Definitivo;
+} PC;
 
-void Login(Resultado *);
-void Lancar_Dado(Dado *, Resultado *, Definitivo *, int *, int);
-void Lancar_Dado_PC(Dado *, Resultado *, Definitivo *);
-void Segurar_Dado(Dado *, Resultado *, Definitivo *);
-void Lancar_Dois_Dados(Dado *, Resultado *, Definitivo *);
-void Lancar_Dois_Dado_PC(Dado *, Resultado *, Definitivo *);
-void Zerar_Dados(Dado *, Resultado *, Definitivo *);
+void Menu_Login(int, Player *, int *, int *, int *);
+void Cadastro(Player *, int *, int *, int *);
+void Login(Player *, int *, int *, int *);
+void Lancar_Dado(Player *, PC *, int *, int, int *);
+void Lancar_Dado_PC(PC *, Player *);
+void Segurar_Dado(Player *);
+void Lancar_Dois_Dados(Player *, PC *, int *, int *);
+void Lancar_Dois_Dado_PC(PC *, Player *);
+void Criar_Ranking(Player *, int *, int *, int *);
+void Atualizar_Ranking(Player *, int *, int *);
+int Jogador_Existente_Ranking(Player *player, int *victory, int *num_jogadores);
+void Mostrar_Ranking();
+void Zerar_Dados(Player *, PC *);
 void Dificuldade(int *);
+
+// main.c
 
 int main()
 {
     setlocale(LC_ALL, "Portuguese");
 
-    int opcao, dificuldade = 1, continuar_jogo = 1, vitoria = 0, Dev = 0;
-    Dado dado;
-    Resultado resultado = {0, 0};
-    Definitivo resultado_definitivo = {0, 0};
+    int opcao, dificuldade = 1, continuar_jogo = 1, vitoria = 0, Dev = 0, cont_jogadas = 0, num_jogadores = 0;
+    Player player;
+    PC computador;
+
+    player.Resultado_Player = 0;
+    player.Resultado_Def_Player = 0;
+    computador.Resultado_PC = 0;
+    computador.Resultado_Def_PC = 0;
 
     srand(time(NULL));
 
+    Menu_Login(opcao, &player, &num_jogadores, &vitoria, &cont_jogadas);
+
     while (continuar_jogo)
     {
-        Login(&resultado);
+        int Soma_Resultado_Def = player.Resultado_Player + player.Resultado_Def_Player;
 
-        int Soma_Resultado_Def = resultado.Resultado_Player + resultado_definitivo.Resultado_Def_Player;
-
-        if (dado.Dado_Player != 1)
+        if (player.Dado_Player != 1)
         {
-            printf("Rodada: %s %d - PC %d\n", resultado.nome, Soma_Resultado_Def, resultado_definitivo.Resultado_Def_PC);
+            printf("Rodada: Player %d - PC %d\n", Soma_Resultado_Def, computador.Resultado_Def_PC);
+            printf("Quantidade de jogadas: %d\n", cont_jogadas);
             printf("Vitorias: %d\n", vitoria);
         }
         else
         {
-            printf("Rodada: %s %d - PC %d\n", resultado.nome, resultado_definitivo.Resultado_Def_Player, resultado_definitivo.Resultado_Def_PC);
+            printf("Rodada: Player %d - PC %d\n", player.Resultado_Def_Player, computador.Resultado_Def_PC);
             printf("Vitórias: %d\n", vitoria);
         }
 
-        if (resultado_definitivo.Resultado_Def_PC < 100 && resultado_definitivo.Resultado_Def_Player < 100)
+        if (computador.Resultado_Def_PC < 100 && player.Resultado_Def_Player < 100)
         {
-            printf("1. Lançar o dado\n2. Segurar\n3. Alterar Dificuldade\n4. Icarus Mode\n5. Encerrar o jogo\n");
+            printf("1. Lançar o dado\n2. Segurar\n3. Alterar Dificuldade\n4. Mostrar Ranking\n5. Icarus Mode\n6. Encerrar o jogo\n");
             scanf("%d", &opcao);
             getchar();
             system("cls");
         }
+
         switch (opcao)
         {
         case 1:
-            if(dificuldade == 1){
-            Lancar_Dado(&dado, &resultado, &resultado_definitivo, &vitoria, Dev);
-            }if(dificuldade == 2){
-            Lancar_Dois_Dados(&dado, &resultado, &resultado_definitivo);
+            if (dificuldade == 1)
+            {
+                Lancar_Dado(&player, &computador, &vitoria, Dev, &cont_jogadas);
+            }
+            if (dificuldade == 2)
+            {
+                Lancar_Dois_Dados(&player, &computador, &cont_jogadas, &vitoria);
             }
             break;
         case 2:
-
-            Segurar_Dado(&dado, &resultado, &resultado_definitivo);
-            
-            if(dificuldade == 1){
-            Lancar_Dado_PC(&dado, &resultado, &resultado_definitivo);
-            }if(dificuldade == 2){
-            Lancar_Dois_Dado_PC(&dado, &resultado, &resultado_definitivo);
+            Segurar_Dado(&player);
+            if (dificuldade == 1)
+            {
+                Lancar_Dado_PC(&computador, &player);
             }
-            
+            if (dificuldade == 2)
+            {
+                Lancar_Dois_Dado_PC(&computador, &player);
+            }
             break;
         case 3:
             Dificuldade(&dificuldade);
             break;
         case 4:
+            Mostrar_Ranking();
+            break;
+        case 5:
             printf("Red Bull te dá asas!\n");
             Dev = 1;
             break;
-        case 5:
+        case 6:
             printf("Encerrando o jogo...\n");
             continuar_jogo = 0;
             break;
@@ -109,211 +130,388 @@ int main()
     return 0;
 }
 
-void Login(Resultado *nome)
+// modulo.c
+
+void Menu_Login(int opcao, Player *players, int *num_jogadores, int *victory, int *cont_jogadas)
 {
-    while (strcmp(nome->nome, "") == 0)
+    printf("1. Registrar novo jogador\n2. Login\n");
+    scanf("%d", &opcao);
+
+    switch (opcao)
     {
-        printf("Informe o nome do jogador: ");
-        scanf("%s", &nome->nome);
-        system("cls");
+    case 1:
+        Cadastro(players, num_jogadores, victory, cont_jogadas);
+        break;
+    case 2:
+        Login(players, num_jogadores, victory, cont_jogadas);
+        break;
+
+    default:
+        printf("Opção inválida!\n");
+        break;
     }
 }
 
-void Lancar_Dado(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo, int *victory, int dev)
+void Cadastro(Player *players, int *num_jogadores, int *victory, int *cont_jogadas)
+{
+    int cont = 0;
+    char linha[100];
+    
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "a+");
+    
+     while (fgets(linha, sizeof(linha), arquivo_ranking)!=NULL){
+        cont++;    
+     }
+     
+     if(cont<=MAX_PLAYERS){
+        printf("Informe o nome do jogador: ");
+        scanf("%s", players->nome);
+        system("cls");
+        printf("Novo jogador cadastrado!\n");
+        
+        fprintf(arquivo_ranking, "%s,", players->nome);
+        fprintf(arquivo_ranking, "%d,", *cont_jogadas);
+        fprintf(arquivo_ranking, "%d,\n", *victory);
+        
+        fclose(arquivo_ranking);
+    }
+    else{
+     printf("Numero maximo de Jogadores atingido\n\n");
+     fclose(arquivo_ranking);
+    }
+}
+
+void Login(Player *players, int *num_jogadores, int *victory, int *cont_jogadas)
+{
+    FILE *arquivo_ranking = fopen("arquivo_ranking.txt", "r");
+
+    char nome[50];
+    char linha[100];
+    int jogador_existente = 0;
+    int verificar = 0;
+
+        printf("Informe o nome do jogador: ");
+        scanf("%s", players->nome);
+        system("cls");
+        while (fgets(linha, sizeof(linha), arquivo_ranking)!=NULL)
+        {
+           sscanf(linha, "%[^,],%d,%d",nome,&*cont_jogadas,&*victory);
+            if (strcmp(nome, players->nome) == 0)
+            {
+                verificar = 1;
+                fclose(arquivo_ranking);
+            }
+        }
+    if(verificar == 0)
+    {
+        printf("Usuario não encontrado!\n");
+        fclose(arquivo_ranking);
+        
+    }
+}
+
+void Lancar_Dado(Player *player, PC *computador, int *victory, int dev, int *jogadas)
 {
     if (dev == 1)
     {
-        dado->Dado_Player = 2 + rand() % (6 - 2 + 1);
+        player->Dado_Player = 2 + rand() % (6 - 2 + 1);
     }
     else
     {
-        dado->Dado_Player = 1 + (rand() % 6);
+        player->Dado_Player = 1 + (rand() % 6);
     }
 
-    if (dado->Dado_Player == 1)
+    if (player->Dado_Player == 1)
     {
         printf("Você tirou 1! Perdeu os pontos da rodada.\n");
-        resultado->Resultado_Player = 0;
-        Lancar_Dado_PC(dado, resultado, resultado_definitivo);
+        player->Resultado_Player = 0;
+        Lancar_Dado_PC(computador, player);
     }
     else
     {
-        resultado->Resultado_Player += dado->Dado_Player;
+        player->Resultado_Player += player->Dado_Player;
 
-        if (dado->Dado_Player > 6)
+        if (player->Dado_Player > 6)
         {
             printf("Você tirou 1! Perdeu os pontos da rodada.\n");
-            resultado->Resultado_Player = 0;
+            player->Resultado_Player = 0;
             return;
         }
 
-        printf("Você tirou %d\n", dado->Dado_Player);
+        printf("Você tirou %d\n", player->Dado_Player);
+        (*jogadas)++;
+        Atualizar_Ranking(player, jogadas, victory);
 
-        if (resultado->Resultado_Player > 0)
+        if (player->Resultado_Player > 0)
         {
-            resultado_definitivo->Resultado_Def_Player += resultado->Resultado_Player;
+            player->Resultado_Def_Player += player->Resultado_Player;
         }
 
-        if (resultado_definitivo->Resultado_Def_Player >= 100)
+        if (player->Resultado_Def_Player >= 100)
         {
             system("cls");
-            printf("%s ganhou!\n", resultado->nome);
-            Zerar_Dados(dado, resultado, resultado_definitivo);
+            printf("%s ganhou!\n", player->nome);
+            Zerar_Dados(player, computador);
             (*victory)++;
         }
         else
         {
-            resultado_definitivo->Resultado_Def_Player = resultado_definitivo->Resultado_Def_Player - resultado->Resultado_Player;
+            player->Resultado_Def_Player = player->Resultado_Def_Player - player->Resultado_Player;
         }
     }
 }
 
-void Segurar_Dado(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo)
+void Segurar_Dado(Player *player)
 {
-    resultado_definitivo->Resultado_Def_Player += resultado->Resultado_Player;
-    resultado->Resultado_Player = 0;
+    player->Resultado_Def_Player += player->Resultado_Player;
+    player->Resultado_Player = 0;
 }
 
-void Lancar_Dado_PC(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo)
+void Lancar_Dado_PC(PC *computador, Player *player)
 {
     printf("Vez do Computador\n");
 
-    while (resultado->Resultado_PC < 100)
+    while (computador->Resultado_PC < 100)
     {
-        dado->Dado_PC = 1 + (rand() % 20);
+        computador->Dado_PC = 1 + (rand() % 20);
 
-        if (dado->Dado_PC > 6)
+        if (computador->Dado_PC > 6)
         {
-            dado->Dado_PC = 2 + rand() % (6 - 2 + 1);
+            computador->Dado_PC = 2 + rand() % (6 - 2 + 1);
         }
 
-        if (dado->Dado_PC == 1)
+        if (computador->Dado_PC == 1)
         {
             printf("Computador tirou 1! Perdeu os pontos da rodada.\n");
-            resultado->Resultado_PC = 0;
+            computador->Resultado_PC = 0;
             break;
         }
         else
         {
-            resultado->Resultado_PC += dado->Dado_PC;
+            computador->Resultado_PC += computador->Dado_PC;
 
-            printf("Computador tirou %d\n", dado->Dado_PC);
+            printf("Computador tirou %d\n", computador->Dado_PC);
 
-            if (resultado_definitivo->Resultado_Def_PC >= 100)
+            if (computador->Resultado_Def_PC >= 100)
             {
                 system("cls");
                 printf("Computador ganhou!\n");
-                Zerar_Dados(dado, resultado, resultado_definitivo);
+                Zerar_Dados(player, computador);
                 break;
             }
 
-            if (resultado->Resultado_PC >= 20)
+            if (computador->Resultado_PC >= 20)
             {
                 printf("O computador decidiu parar\n");
-                resultado_definitivo->Resultado_Def_PC += resultado->Resultado_PC;
-                resultado->Resultado_PC = 0;
+                computador->Resultado_Def_PC += computador->Resultado_PC;
+                computador->Resultado_PC = 0;
                 break;
             }
         }
     }
 }
 
-void Lancar_Dois_Dados(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo)
+void Lancar_Dois_Dados(Player *player, PC *computador, int *cont_jogadas, int *victory)
 {
 
-    dado->Dado_Player = 1 + (rand() % 6);
-    dado->Dado_Player_2 = 1 + (rand() % 6);
+    player->Dado_Player = 1 + (rand() % 6);
+    player->Dado_Player_2 = 1 + (rand() % 6);
 
-    if (dado->Dado_Player == 1 || dado->Dado_Player_2 == 1)
+    if (player->Dado_Player == 1 || player->Dado_Player_2 == 1)
     {
         printf("Você tirou 1! Perdeu os pontos da rodada.\n");
-        resultado->Resultado_Player = 0;
-        Lancar_Dois_Dado_PC(dado, resultado, resultado_definitivo);
+        player->Resultado_Player = 0;
+        Lancar_Dois_Dado_PC(computador, player);
     }
     else
     {
-        resultado->Resultado_Player += dado->Dado_Player;
-        resultado->Resultado_Player += dado->Dado_Player_2;
+        player->Resultado_Player += player->Dado_Player;
+        player->Resultado_Player += player->Dado_Player_2;
 
-        printf("Você tirou %d e %d\n", dado->Dado_Player,dado->Dado_Player_2);
+        printf("Você tirou %d e %d\n", player->Dado_Player, player->Dado_Player_2);
+        (*cont_jogadas)++;
+        Atualizar_Ranking(player, cont_jogadas, victory);
 
-        if (resultado->Resultado_Player > 0)
+        if (player->Resultado_Player > 0)
         {
-            resultado_definitivo->Resultado_Def_Player += resultado->Resultado_Player;
+            player->Resultado_Def_Player += player->Resultado_Player;
         }
 
-        if (resultado_definitivo->Resultado_Def_Player >= 100)
+        if (player->Resultado_Def_Player >= 100)
         {
             system("cls");
             printf("Player ganhou!\n");
-            Zerar_Dados(dado, resultado, resultado_definitivo);
+            (*victory)++;
+            Zerar_Dados(player, computador);
         }
         else
         {
-            resultado_definitivo->Resultado_Def_Player = resultado_definitivo->Resultado_Def_Player - resultado->Resultado_Player;
+            player->Resultado_Def_Player = player->Resultado_Def_Player - player->Resultado_Player;
         }
     }
 }
 
-void Lancar_Dois_Dado_PC(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo)
+void Lancar_Dois_Dado_PC(PC *computador, Player *player)
 {
     printf("Vez do Computador\n");
 
-    while (resultado->Resultado_PC < 100)
+    while (computador->Resultado_PC < 100)
     {
-        dado->Dado_PC = 1 + (rand() % 20);
-        dado->Dado_PC_2 = 1 + (rand() % 20);
+        computador->Dado_PC = 1 + (rand() % 20);
+        computador->Dado_PC_2 = 1 + (rand() % 20);
 
-        if (dado->Dado_PC > 6 || dado->Dado_PC_2 > 6)
+        if (computador->Dado_PC > 6 || computador->Dado_PC_2 > 6)
         {
-            dado->Dado_PC = 2 + rand() % (6 - 2 + 1);
-            dado->Dado_PC_2 = 2 + rand() % (6 - 2 + 1);
+            computador->Dado_PC = 2 + rand() % (6 - 2 + 1);
+            computador->Dado_PC_2 = 2 + rand() % (6 - 2 + 1);
         }
-        
 
-        if (dado->Dado_PC == 1 || dado->Dado_PC_2 == 1)
+        if (computador->Dado_PC == 1 || computador->Dado_PC_2 == 1)
         {
             printf("Computador tirou 1! Perdeu os pontos da rodada.\n");
-            resultado->Resultado_PC = 0;
+            computador->Resultado_PC = 0;
             break;
         }
         else
         {
-            resultado->Resultado_PC += dado->Dado_PC;
-            resultado->Resultado_PC += dado->Dado_PC_2;
+            computador->Resultado_PC += computador->Dado_PC;
+            computador->Resultado_PC += computador->Dado_PC_2;
 
-            printf("Computador tirou %d e %d\n", dado->Dado_PC,dado->Dado_PC_2);
+            printf("Computador tirou %d e %d\n", computador->Dado_PC, computador->Dado_PC_2);
 
-            if (resultado_definitivo->Resultado_Def_PC >= 100)
+            if (computador->Resultado_Def_PC >= 100)
             {
                 system("cls");
                 printf("Computador ganhou!\n");
-                Zerar_Dados(dado, resultado, resultado_definitivo);
+                Zerar_Dados(player, computador);
                 break;
             }
 
-            if (resultado->Resultado_PC >= 20)
+            if (computador->Resultado_PC >= 20)
             {
                 printf("O computador decidiu parar\n");
-                resultado_definitivo->Resultado_Def_PC += resultado->Resultado_PC;
-                resultado->Resultado_PC = 0;
+                computador->Resultado_Def_PC += computador->Resultado_PC;
+                computador->Resultado_PC = 0;
                 break;
             }
         }
     }
 }
 
-void Zerar_Dados(Dado *dado, Resultado *resultado, Definitivo *resultado_definitivo)
+void Criar_Ranking(Player *players, int *victory, int *cont_jogadas, int *num_jogadores)
 {
-    resultado_definitivo->Resultado_Def_PC = 0;
-    resultado_definitivo->Resultado_Def_Player = 0;
-    resultado->Resultado_Player = 0;
-    resultado->Resultado_PC = 0;
-    dado->Dado_Player = 0;
-    dado->Dado_PC = 0;
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "a");
+
+    // int jogador_existente = Jogador_Existente_Ranking(resultado, victory, cont_user);
+
+    if (arquivo_ranking != NULL)
+    {
+        fprintf(arquivo_ranking, "%s,", players->nome);
+        fprintf(arquivo_ranking, "%d,", *cont_jogadas);
+        fprintf(arquivo_ranking, "%d,\n", *victory);
+    }
+    else
+    {
+        printf("ERRO AO CRIAR O ARQUIVO!");
+    }
+
+    fclose(arquivo_ranking);
 }
 
-void Dificuldade(int * dificuldade)
+void Atualizar_Ranking(Player *player, int *cont_jogadas, int *victory)
+{
+    FILE *arquivo_ranking_temp = fopen("./arquivo_ranking_temp.txt", "w+");
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r+");
+    
+    char nome[50];
+    int jogadas, vitorias, verificar = 0;
+    char linha[100];
+    
+    while(fgets(linha, strlen(linha), arquivo_ranking) != NULL)
+    {
+       sscanf(linha, "%[^,],%d,%d", nome, &jogadas, &vitorias);
+      
+      if(strcmp(nome, player->nome) == 0)
+      {
+        fprintf(arquivo_ranking_temp, "%s,%d,%d\n", player->nome, *cont_jogadas,*victory);
+      }
+      else
+      {
+        fprintf(arquivo_ranking_temp, "%s,%d,%d\n", nome, jogadas, vitorias);
+      }
+    }
+    
+    fclose(arquivo_ranking_temp);
+    fclose(arquivo_ranking);
+    
+    remove("./arquivo_ranking.txt");
+    rename("./arquivo_ranking_temp.txt", "./arquivo_ranking.txt");
+}
+
+// erro na lógica da função
+
+int Jogador_Existente_Ranking(Player *player, int *victory, int *num_jogadores)
+{
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r");
+
+    char nome[50];
+    int jogador_existente = 0;
+
+    if (arquivo_ranking != NULL)
+    {
+        while (fscanf(arquivo_ranking, "%[^,]\n", nome) != EOF)
+        {
+            if (strcmp(player->nome, nome) == 0)
+            {
+                jogador_existente = 1;
+                break;
+            }
+        }
+    }
+    else
+    {
+        printf("ERRO AO VERIFICAR EXISTÊNCIA DO JOGADOR!\n");
+    }
+
+    fclose(arquivo_ranking);
+    return jogador_existente;
+}
+
+void Mostrar_Ranking()
+{
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r");
+
+    if (arquivo_ranking != NULL)
+    {
+        char conteudo[100];
+
+        while (fgets(conteudo, 100, arquivo_ranking) != NULL)
+        {
+            printf("%s", conteudo);
+        }
+
+        getchar();
+        system("cls");
+    }
+    else
+    {
+        printf("ERRO AO VISUALIZAR O ARQUIVO!\n");
+    }
+
+    fclose(arquivo_ranking);
+}
+
+void Zerar_Dados(Player *player, PC *computador)
+{
+    computador->Resultado_Def_PC = 0;
+    player->Resultado_Def_Player = 0;
+    player->Resultado_Player = 0;
+    computador->Resultado_PC = 0;
+    player->Dado_Player = 0;
+    computador->Dado_PC = 0;
+}
+
+void Dificuldade(int *dificuldade)
 {
 
     printf("1. Fácil\n2. Difícil\n");
