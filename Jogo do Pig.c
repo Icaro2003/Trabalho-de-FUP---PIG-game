@@ -36,7 +36,7 @@ void Lancar_Dois_Dado_PC(PC *, Player *);
 void Criar_Ranking(Player *, int *, int *, int *);
 void Atualizar_Ranking(Player *, int *, int *);
 int Jogador_Existente_Ranking(Player *player, int *victory, int *num_jogadores);
-void Mostrar_Ranking(Player *, int *, int *);
+void Mostrar_Ranking();
 void Zerar_Dados(Player *, PC *);
 void Dificuldade(int *);
 
@@ -487,7 +487,58 @@ int jogadas;
 int vitorias;
 }Lista_Jogadores;
 
-void Mostrar_Ranking(Player *player, int *victory, int *cont_jogadas)
+int compararRanking(const void *a, const void *b) {
+    const Lista_Jogadores *jogadorA = (const Lista_Jogadores *)a;
+    const Lista_Jogadores *jogadorB = (const Lista_Jogadores *)b;
+
+    // Ordena por maior vitoria
+    if (jogadorA->vitorias > jogadorB->vitorias) {
+        return -1;
+    } else if (jogadorA->vitorias < jogadorB->vitorias) {
+        return 1;
+    }
+
+    // Se as maiores vitorias são iguais, ordena por menor jogada
+    if (jogadorA->jogadas < jogadorB->jogadas) {
+        return -1;
+    } else if (jogadorA->jogadas > jogadorB->jogadas) {
+        return 1;
+    }
+
+    return 0;
+}
+
+void Mostrar_Ranking() {
+    FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r");
+
+    if (arquivo_ranking != NULL) {
+        Lista_Jogadores lista[100];
+        char linha[100];
+        int cont = 0;
+
+        while (fgets(linha, sizeof(linha), arquivo_ranking) != NULL) {
+            sscanf(linha, "%[^,],%d,%d", lista[cont].nome, &lista[cont].jogadas, &lista[cont].vitorias);
+            cont++;
+        }
+
+        // Ordenar o ranking usando qsort
+        qsort(lista, cont, sizeof(Lista_Jogadores), compararRanking);
+
+        // Mostrar resultados hierárquicos
+        for (int i = 0; i < cont; i++) {
+            printf("Nome do jogador: %s\n", lista[i].nome);
+            printf("Quantidade de jogadas: %d\n", lista[i].jogadas);
+            printf("Quantidade de vitórias: %d\n\n", lista[i].vitorias);
+        }
+
+        fclose(arquivo_ranking);
+    } else {
+        fprintf(stderr, "Erro ao abrir o arquivo de ranking\n");
+    }
+}
+
+
+/*void Mostrar_Ranking(Player *player, int *victory, int *cont_jogadas)
 {
   
     FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r");
@@ -531,7 +582,7 @@ void Mostrar_Ranking(Player *player, int *victory, int *cont_jogadas)
         }
     }
         fclose(arquivo_ranking);
-}
+}*/
     
 
     
