@@ -485,13 +485,21 @@ typedef struct {
 char nome [50];
 int jogadas;
 int vitorias;
+double taxa_vitoria_por_jogada;
 }Lista_Jogadores;
 
 int compararRanking(const void *a, const void *b) {
     const Lista_Jogadores *jogadorA = (const Lista_Jogadores *)a;
     const Lista_Jogadores *jogadorB = (const Lista_Jogadores *)b;
 
-    // Ordena por maior vitoria
+    // Ordena por maior taxa de vitória por jogada
+    if (jogadorA->taxa_vitoria_por_jogada > jogadorB->taxa_vitoria_por_jogada) {
+        return -1;
+    } else if (jogadorA->taxa_vitoria_por_jogada < jogadorB->taxa_vitoria_por_jogada) {
+        return 1;
+    }
+
+    // Se as taxas de vitórias por jogada são iguais, ordena por maior vitoria
     if (jogadorA->vitorias > jogadorB->vitorias) {
         return -1;
     } else if (jogadorA->vitorias < jogadorB->vitorias) {
@@ -508,6 +516,11 @@ int compararRanking(const void *a, const void *b) {
     return 0;
 }
 
+void CalcularTaxaVitoriaPorJogada(Lista_Jogadores *jogador) {
+    // Adicione o cálculo da taxa de vitória por jogada aqui
+    jogador->taxa_vitoria_por_jogada = (jogador->jogadas != 0) ? (double)jogador->vitorias / jogador->jogadas : 0;
+}
+
 void Mostrar_Ranking() {
     FILE *arquivo_ranking = fopen("./arquivo_ranking.txt", "r");
 
@@ -518,6 +531,7 @@ void Mostrar_Ranking() {
 
         while (fgets(linha, sizeof(linha), arquivo_ranking) != NULL) {
             sscanf(linha, "%[^,],%d,%d", lista[cont].nome, &lista[cont].jogadas, &lista[cont].vitorias);
+            CalcularTaxaVitoriaPorJogada(&lista[cont]); // Calcula a taxa de vitória por jogada
             cont++;
         }
 
